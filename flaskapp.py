@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 # https://www.infoblox.com/wp-content/uploads/infoblox-deployment-infoblox-rest-api.pdf
 
@@ -12,7 +12,7 @@ from pprint import pprint
 
 app = Flask(__name__)
 app.config['BASIC_AUTH_USERNAME'] = 'admin'
-app.config['BASIC_AUTH_PASSWORD'] = 'infoblox1'
+app.config['BASIC_AUTH_PASSWORD'] = 'infoblox'
 app.config['BASIC_AUTH_FORCE'] = True
 basic_auth = BasicAuth(app)
 
