@@ -1,7 +1,8 @@
 FROM alpine:3.6
 
-ADD flaskapp.y /root/flaskapp.py
+ADD flaskapp.py /root/flaskapp.py
 ADD requirements.txt /root/requirements.txt
-RUN pip install -r /root/requirements.txt
-EXPOSE [443]
-CMD ['python /root/flaskapp.py']
+RUN apk add --no-cache build-base openssl-dev libffi-dev python3 python3-dev py3-pip
+RUN pip3 install -r /root/requirements.txt
+EXPOSE 443
+CMD /usr/bin/python3 /root/flaskapp.py

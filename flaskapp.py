@@ -207,4 +207,4 @@ def v21_abstractview_ref(viewtype, refid, subname):
 
 
 if __name__ == "__main__":
-    app.run(port=443, ssl_context='adhoc')
+    app.run(host='0.0.0.0', port=443, ssl_context='adhoc')
