@@ -160,6 +160,7 @@ class DataModel(object):
     def __init__(self):
         self.views = {
             'network': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
+            'networkview': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
             'ipv6network': [NetworkView(uid='ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA', isdefault=True, name='default', network='fe80::/64')],
             'zone_auth': [],
             'view': [],
@@ -189,8 +190,10 @@ class DataModel(object):
         self.views[viewtype].append(view)
         return view
 
-    def delete_view_by_refid(self, refid):
+    def delete_view_by_refid(self, refid, viewtype=None):
         for k,v in self.views.items():
+            if viewtype and viewtype != k:
+                continue
             for idx,x in enumerate(v):
                 if x._ref == refid:
                     print('REMOVING %s' % x._ref)
@@ -253,12 +256,18 @@ class DataModel(object):
         else:
             return None
 
-    def serialize_views(self, name=None):
+    def serialize_views(self, viewtype=None, name=None):
         res = []
         for k,v in self.views.items():
+            if viewtype and viewtype != k:
+                continue
             if name:
+                print('# filtering all in %s by name %s' % (k, name))
+                print([x for x in v])
+                print([x.name for x in v])
                 res += [x.to_dict() for x in v if x.name == name]
             else:
+                print('# collecting all in %s' % k)
                 res += [x.to_dict() for x in v]
         return res
 
@@ -284,8 +293,8 @@ DATA = DataModel()
 
 @app.route('/wapi/v2.1/<viewtype>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def v21_base(viewtype):
-    if viewtype != 'view':
-        viewtype = viewtype.replace('view', '')
+    #if viewtype != 'view':
+    #    viewtype = viewtype.replace('view', '')
     #print('VIEWTYPE: %s METHOD: %s' % (viewtype, request.method))
 
     print('# METHOD: %s VIEWTYPE: %s' % (
@@ -302,7 +311,8 @@ def v21_base(viewtype):
 
     if request.method == 'GET':
         print('# FETCHED VIEW ...')
-        payload = DATA.serialize_view(viewtype, name=args.get('name'))
+        #payload = DATA.serialize_view(viewtype, name=args.get('name'))
+        payload = DATA.serialize_views(viewtype=viewtype, name=args.get('name'))
         pprint(payload)
         return jsonify(payload)
 
@@ -371,8 +381,8 @@ def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsu
         return jsonify(view.to_dict()), 201
     elif request.method == 'DELETE':
         print('# DELETE VIEW [%s]' % _refid)
-        DATA.delete_view_by_refid(_refid)
-        pprint(DATA.serialize_views())
+        DATA.delete_view_by_refid(_refid, viewtype=viewtype)
+        pprint(DATA.serialize_views(viewtype=viewtype))
         return jsonify({})
 
     print('default return ...')
