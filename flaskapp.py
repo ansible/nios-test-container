@@ -219,13 +219,18 @@ class DataModel(object):
                         print('# pk: %s pv: %s' % (pk, pv))
                         if getattr(self.views[k][idx], pk) != pv:
                             print('%s is "%s" on %s' % (pk, getattr(x, pk), refid))
-                            print('setting %s to %s on %s' % (pk, pv, refid))
+                            print('setting %s to "%s" on %s' % (pk, pv, refid))
                             setattr(self.views[k][idx], pk, pv)
                             changed = True
                     break
         print('# %s updated? %s' % (refid, changed))
-        if viewk and viewix:
-            return self.views[viewk][viewix]
+        print('# viewk: %s' % viewk)
+        print('# viewix: %s' % viewix)
+        if viewk is not None and viewix is not None:
+            print('# accessing found view')
+            thisview = self.views[viewk][viewix]
+            print('# return %s' % thisview)
+            return thisview
         else:
             return None
 
@@ -378,7 +383,7 @@ def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsu
             return jsonify({})
         print('# MODIFIED VIEW [%s] ...' % view.uid)
         pprint(view.to_dict())
-        return jsonify(view.to_dict()), 201
+        return jsonify(view.to_dict()), 200
     elif request.method == 'DELETE':
         print('# DELETE VIEW [%s]' % _refid)
         DATA.delete_view_by_refid(_refid, viewtype=viewtype)
