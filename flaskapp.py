@@ -2,6 +2,7 @@
 
 # https://www.infoblox.com/wp-content/uploads/infoblox-deployment-infoblox-rest-api.pdf
 
+import base64
 from flask import Flask
 from flask import jsonify
 from flask import request
@@ -28,7 +29,9 @@ class NetworkView(object):
     network = None
 
     def __init__(self, uid, default, name, viewtype='networkview', network=None):
-        self.uid = uid
+        # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
+        #self.uid = uid
+        self.uid = (base64.b64encode(str.encode(str(viewtype) + '$' + str(network) + '$' + str(name)))).decode('utf-8')
         self.default = default
         self.name = name
         self.viewtype = viewtype
@@ -164,8 +167,10 @@ def v21_base(viewtype):
     pprint(args)
 
     if request.method == 'GET':
-        return jsonify(DATA.serialize_view(viewtype))
-        #return jsonify({})
+        payload = DATA.serialize_view(viewtype)
+        pprint(payload)
+        return jsonify(payload)
+
     elif request.method == 'POST':
         view = DATA.create_view(request.get_json())
         print('# CREATED ...')
