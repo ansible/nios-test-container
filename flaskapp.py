@@ -30,7 +30,7 @@ class NetworkView(object):
     extattrs = {}
     network_view = 'default'
     network = None
-    options = None
+    options = []
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -144,7 +144,8 @@ class NetworkView(object):
             'extattrs': self.extattrs,
             'network_view': self.network_view,
             'network': self.network,
-            'viewtype': self.viewtype
+            'viewtype': self.viewtype,
+            'options': self.options
         }
         if fields:
             for x in fields:
@@ -217,11 +218,40 @@ class DataModel(object):
                     viewix = idx
                     for pk,pv in params.items():
                         print('# pk: %s pv: %s' % (pk, pv))
-                        if getattr(self.views[k][idx], pk) != pv:
-                            print('%s is "%s" on %s' % (pk, getattr(x, pk), refid))
-                            print('setting %s to "%s" on %s' % (pk, pv, refid))
-                            setattr(self.views[k][idx], pk, pv)
-                            changed = True
+                        if pk == 'options':
+                            # INPUT ...
+                            # options: [
+                            #   {'name': 'domain-name',
+                            #    'use_option: True,
+                            #    'value': 'ansible.com',
+                            #    'vendor_class': 'DHCP'}
+                            # ]
+                            # RESULT ...
+                            # u'options': [{u'name': u'dhcp-lease-time',
+                            # u'num': 51, u'use_option': False, u'value':
+                            # u'43200', u'vendor_class': u'DHCP'}]
+                            opts = x.options[:]
+                            if not opts:
+                                opts = pv[:]
+                            else:
+                                for idr,reqopt in enumerate(pv):
+                                    isset = False
+                                    for idv,viewopt in enumerate(opts):
+                                        if viewopt.get('name') != reqopt.get('name'):
+                                            continue
+                                        for rk,rv in reqopt.items():
+                                            opts[idv][rk] = rv
+                                        isset = False
+                                    if not isset:
+                                        opts.append(reqopt)
+
+                            setattr(self.views[k][idx], pk, opts[:])
+                        else:
+                            if getattr(self.views[k][idx], pk) != pv:
+                                print('%s is "%s" on %s' % (pk, getattr(x, pk), refid))
+                                print('setting %s to "%s" on %s' % (pk, pv, refid))
+                                setattr(self.views[k][idx], pk, pv)
+                                changed = True
                     break
         print('# %s updated? %s' % (refid, changed))
         print('# viewk: %s' % viewk)
@@ -234,6 +264,7 @@ class DataModel(object):
         else:
             return None
 
+    '''
     def update_view_by_uid(self, uid, params):
         print('# UPDATING UID %s' % uid)
         viewk = None
@@ -260,6 +291,7 @@ class DataModel(object):
             return self.views[viewk][viewix]
         else:
             return None
+    '''
 
     def serialize_views(self, viewtype=None, name=None):
         res = []
