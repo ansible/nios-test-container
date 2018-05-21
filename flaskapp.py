@@ -30,14 +30,15 @@ class NetworkView(object):
     extattrs = {}
     network_view = 'default'
     network = None
+    options = None
 
-    def __init__(self, uid, default, name, viewtype='network', network=None, comment=None):
+    def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
         #self.uid = uid
         #self.uid = (base64.b64encode(str.encode(str(viewtype) + '$' + str(network) + '$' + str(name)))).decode('utf-8')
         if uid:
             self._uid = uid
-        self.default = default
+        self.default = isdefault
         self.name = name
         self.viewtype = viewtype
         self.network = network
@@ -53,10 +54,13 @@ class NetworkView(object):
         except:
             uid += self.viewtype
         uid += '$'
-        try:
-            uid += str.encode(self.network)
-        except:
-            uid += self.network
+        if self.network is None:
+            uid += 'None'
+        else:
+            try:
+                uid += str.encode(self.network)
+            except:
+                uid += self.network
         uid = str.encode(uid)
         uid = base64.b64encode(uid)
         uid = uid.decode('utf-8')
@@ -155,8 +159,8 @@ class NetworkView(object):
 class DataModel(object):
     def __init__(self):
         self.views = {
-            'network': [NetworkView('ZG5zLm5ldHdvcmtfdmlldyQw', True, 'default', network='1.0.0.0/24')],
-            'ipv6network': [NetworkView('ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA', True, 'default', network='fe80::/64')],
+            'network': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
+            'ipv6network': [NetworkView(uid='ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA', isdefault=True, name='default', network='fe80::/64')],
             'zone_auth': [],
             'view': [],
             'record:host': []
@@ -167,9 +171,9 @@ class DataModel(object):
         # res = DATA.create_view(request.get_json())
         print ('########### VIEWTYPE: ' + viewtype)
         view = NetworkView(
-            None,
-            False,
-            payload.get('name', ''),
+            uid=None,
+            isdefault=False,
+            name=payload.get('name', ''),
             viewtype=viewtype
         )
         '''
@@ -209,8 +213,9 @@ class DataModel(object):
                     viewk = k
                     viewix = idx
                     for pk,pv in params.items():
+                        print('# pk: %s pv: %s' % (pk, pv))
                         if getattr(self.views[k][idx], pk) != pv:
-                            print('%s is "%s" on %s' % (pk, getattr(x, pk), uid))
+                            print('%s is "%s" on %s' % (pk, getattr(x, pk), refid))
                             print('setting %s to %s on %s' % (pk, pv, refid))
                             setattr(self.views[k][idx], pk, pv)
                             changed = True
@@ -257,7 +262,7 @@ class DataModel(object):
                 res += [x.to_dict() for x in v]
         return res
 
-    def serialize_view(self, view_type):
+    def serialize_view(self, view_type, name=None):
         #print('serializing %s view' % view_type)
         res = [x.to_dict() for x in self.views[view_type]]
         return res
@@ -297,7 +302,7 @@ def v21_base(viewtype):
 
     if request.method == 'GET':
         print('# FETCHED VIEW ...')
-        payload = DATA.serialize_view(viewtype)
+        payload = DATA.serialize_view(viewtype, name=args.get('name'))
         pprint(payload)
         return jsonify(payload)
 
