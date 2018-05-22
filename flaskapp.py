@@ -23,6 +23,7 @@ basic_auth = BasicAuth(app)
 
 class NetworkView(object):
     parent = None
+    view = None
     viewtype = None
     _uid = None
     is_default = False
@@ -32,6 +33,7 @@ class NetworkView(object):
     network_view = 'default'
     network = None
     options = []
+    fqdn = None
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -181,8 +183,10 @@ class NetworkView(object):
             'extattrs': self.extattrs,
             'network_view': self.network_view,
             'network': self.network,
+            'view': self.view,
             'viewtype': self.viewtype,
-            'options': self.options
+            'options': self.options,
+            'fqdn': self.fqdn
         }
         if fields:
             for x in fields:
