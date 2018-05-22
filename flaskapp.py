@@ -22,6 +22,7 @@ basic_auth = BasicAuth(app)
 
 
 class NetworkView(object):
+    parent = None
     viewtype = None
     _uid = None
     is_default = False
@@ -46,14 +47,50 @@ class NetworkView(object):
 
     @property
     def uid(self):
+
+        # PARENT: ZG5zLnZpZXckLl9kZWZhdWx0 ==
+        #   dns.view$._default
+        # CHILD: ZG5zLnpvbmUkLl9kZWZhdWx0LmFuc2libGUtZG5z ==
+        #   dns.zone$._default.ansible-dns
+
+        '''
+        $ for X in $(cat uuids.sorted.txt); do echo $X; echo $X | base64 -D ; echo ""; done;
+        ZG5zLm5ldHdvcmskMTkyLjE2OC4xMC4wLzI0LzA
+        dns.network$192.168.10.0/24
+        ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA
+        dns.network$fe80::/64
+        ZG5zLm5ldHdvcmtfdmlldyQ0
+        dns.network_view$4
+        ZG5zLm5ldHdvcmtfdmlldyQw
+        dns.network_view$0
+        ZG5zLnZpZXckLjI5
+        dns.view$.29
+        ZG5zLnZpZXckLjMw
+        dns.view$.30
+        ZG5zLnZpZXckLl9kZWZhdWx0
+        dns.view$._default
+        ZG5zLnpvbmUkLl9kZWZhdWx0LmFuc2libGUtZG5z
+        dns.zone$._default.ansible-dns
+        '''
+
         if self._uid:
             return self._uid
+
         uid = 'dns.'
-        try:
-            uid += str.encode(self.viewtype)
-        except:
-            uid += self.viewtype
+
+        if self.viewtype == 'zone_auth':
+            uid += 'zone'
+        else:
+            try:
+                uid += str.encode(self.viewtype)
+            except:
+                uid += self.viewtype
+
         uid += '$'
+
+        if self.viewtype == 'zone_auth':
+            uid += '._default.'
+
         if self.network is None:
             uid += 'None'
         else:
@@ -119,7 +156,7 @@ class NetworkView(object):
             out += '/'
             out += self.uid
             out += ':'
-            out += self.network
+            out += str(self.network)
             out += '/'
             out += self.network_view
         else:
@@ -164,11 +201,13 @@ class DataModel(object):
             'networkview': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
             'ipv6network': [NetworkView(uid='ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA', isdefault=True, name='default', network='fe80::/64')],
             'zone_auth': [],
-            'view': [],
+            'view': [NetworkView(isdefault=True, name='default', viewtype='view')],
             'record:host': []
         }
+        # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
+        # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
 
-    def create_view(self, payload, viewtype='view'):
+    def create_view(self, payload, viewtype='view', parent=None):
         # '{"name": "ansible-dns", "network_view": "default"}'
         # res = DATA.create_view(request.get_json())
         print ('########### VIEWTYPE: ' + viewtype)
@@ -186,6 +225,8 @@ class DataModel(object):
         if payload.get('comment'):
             view.comment = payload['comment']
         '''
+        if parent:
+            view.parent = parent
         for k,v in payload.items():
             setattr(view, k, v)
         self.views[viewtype].append(view)
@@ -423,8 +464,7 @@ def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsu
         return jsonify({})
 
     print('default return ...')
-    return ''
-
+    #return ''
     return jsonify({})
 
 
