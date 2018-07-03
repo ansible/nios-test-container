@@ -3,16 +3,12 @@
 # https://www.infoblox.com/wp-content/uploads/infoblox-deployment-infoblox-rest-api.pdf
 
 import base64
-import sys
+from pprint import pprint
 
-import flask
 from flask import Flask
 from flask import jsonify
 from flask import request
 from flask_basicauth import BasicAuth
-from pprint import pprint
-
-
 
 app = Flask(__name__)
 app.config['BASIC_AUTH_USERNAME'] = 'admin'
@@ -28,6 +24,7 @@ class NetworkView(object):
     _uid = None
     is_default = False
     name = None
+    ptrdname = None
     comment = None
     extattrs = {}
     network_view = 'default'
@@ -36,11 +33,13 @@ class NetworkView(object):
     fqdn = None
     ipv4addrs = []
     ipv6addrs = []
+    ipv4addr = None
+    ipv6addr = None
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
-        #self.uid = uid
-        #self.uid = (base64.b64encode(str.encode(str(viewtype) + '$' + str(network) + '$' + str(name)))).decode('utf-8')
+        # self.uid = uid
+        # self.uid = (base64.b64encode(str.encode(str(viewtype) + '$' + str(network) + '$' + str(name)))).decode('utf-8')
         if uid:
             self._uid = uid
         self.default = isdefault
@@ -57,7 +56,7 @@ class NetworkView(object):
         # CHILD: ZG5zLnpvbmUkLl9kZWZhdWx0LmFuc2libGUtZG5z ==
         #   dns.zone$._default.ansible-dns
 
-        '''
+        """
         $ for X in $(cat uuids.sorted.txt); do echo $X; echo $X | base64 -D ; echo ""; done;
         ZG5zLm5ldHdvcmskMTkyLjE2OC4xMC4wLzI0LzA
         dns.network$192.168.10.0/24
@@ -75,7 +74,7 @@ class NetworkView(object):
         dns.view$._default
         ZG5zLnpvbmUkLl9kZWZhdWx0LmFuc2libGUtZG5z
         dns.zone$._default.ansible-dns
-        '''
+        """
 
         if self._uid:
             return self._uid
@@ -87,7 +86,7 @@ class NetworkView(object):
         else:
             try:
                 uid += str.encode(self.viewtype)
-            except:
+            except Exception:
                 uid += self.viewtype
 
         uid += '$'
@@ -100,7 +99,7 @@ class NetworkView(object):
         else:
             try:
                 uid += str.encode(self.network)
-            except:
+            except Exception:
                 uid += self.network
         uid = str.encode(uid)
         uid = base64.b64encode(uid)
@@ -128,7 +127,7 @@ class NetworkView(object):
 
     @property
     def _ref(self):
-        '''
+        """
         (ansidev) jtanner-OSX:AP-NIOS_FLASK_MOCK jtanner$ curl -k -u admin:infoblox 'https://192.168.10.10/wapi/v2.1/network'
         [
             {
@@ -153,7 +152,7 @@ class NetworkView(object):
         ]
 
         network/ZG5zLm5ldHdvcmskMTkyLjE2OC4xMC4wLzI0LzA:192.168.10.0/24/default
-        '''
+        """
         # <WAPITYPE>/<REFDATA>:<NAME>[/<NAMEN>]
         if self.viewtype == 'network':
             out = self.viewtype
@@ -168,30 +167,33 @@ class NetworkView(object):
             out += '/'
             out += self.uid
             out += ':'
-            out += self.name
+            out += self.name if self.ptrdname is None else self.get_ptr_name()
             out += '/'
             out += str(self.default).lower()
-        return out
-        #return self.viewtype + '/' + self.uid + ':' + self.name + '/' + str(self.default).lower()
+        return out  # return self.viewtype + '/' + self.uid + ':' + self.name + '/' + str(self.default).lower()
 
-    def to_dict(self, fields=[]):
-        ddict = {
-            'uid': self.uid,
-            '_ref': self._ref,
-            #'_ref': self.uid,
-            'is_default': self.default,
-            'name': self.name,
-            'comment': self.comment,
-            'extattrs': self.extattrs,
-            'network_view': self.network_view,
-            'network': self.network,
-            'view': self.view,
-            'viewtype': self.viewtype,
-            'options': self.options,
-            'fqdn': self.fqdn,
-            'ipv4addrs': self.ipv4addrs,
-            'ipv6addrs': self.ipv6addrs
-        }
+    def to_dict(self, fields=None):
+        if fields is None:
+            fields = []
+        ddict = {'uid': self.uid,
+                 '_ref': self._ref,  # '_ref': self.uid,
+                 'is_default': self.default,
+                 'name': self.name,
+                 'ptrdname': self.ptrdname,
+                 'comment': self.comment,
+                 'extattrs': self.extattrs,
+                 'network_view': self.network_view,
+                 'network': self.network,
+                 'view': self.view,
+                 'viewtype': self.viewtype,
+                 'options': self.options,
+                 'fqdn': self.fqdn,
+                 'ipv4addrs': self.ipv4addrs,
+                 'ipv6addrs': self.ipv6addrs,
+                 'ipv4addr': self.ipv4addr,
+                 'ipv6addr': self.ipv6addr
+
+                 }
         if fields:
             for x in fields:
                 if x not in ddict:
@@ -201,30 +203,31 @@ class NetworkView(object):
                         ddict[x] = getattr(self, x)
         return ddict
 
+    def get_ptr_name(self):
+        """Get the name in the _ref for PTR:RECORD
 
+        :return: str
+        """
+        pget = self.ipv6addr if self.ipv4addr is None else self.ipv4addr
+        return "%s.in-addr.arpa" % '.'.join(reversed(str(pget).split('.')))
+
+
+# noinspection PyProtectedMember
 class DataModel(object):
     def __init__(self):
-        self.views = {
-            'network': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
-            'networkview': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
-            'ipv6network': [NetworkView(uid='ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA', isdefault=True, name='default', network='fe80::/64')],
-            'zone_auth': [],
-            'view': [NetworkView(isdefault=True, name='default', viewtype='view')],
-            'record:host': []
-        }
-        # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
-        # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
+        self.views = {'network': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
+                      'networkview': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
+                      'ipv6network': [NetworkView(uid='ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA', isdefault=True, name='default', network='fe80::/64')], 'zone_auth': [],
+                      'view': [NetworkView(isdefault=True, name='default', viewtype='view')],
+                      'record:host': [],
+                      'record:ptr': [], }  # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0  # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
 
     def create_view(self, payload, viewtype='view', parent=None):
         # '{"name": "ansible-dns", "network_view": "default"}'
         # res = DATA.create_view(request.get_json())
-        print ('########### VIEWTYPE: ' + viewtype)
-        view = NetworkView(
-            uid=None,
-            isdefault=False,
-            name=payload.get('name', ''),
-            viewtype=viewtype
-        )
+        print('########### VIEWTYPE: ' + viewtype)
+        name = payload.get('name', None)
+        view = NetworkView(uid=None, isdefault=False, name=name, viewtype=viewtype)
         '''
         if payload.get('network'):
             view.network = payload['network']
@@ -235,29 +238,28 @@ class DataModel(object):
         '''
         if parent:
             view.parent = parent
-        for k,v in payload.items():
+        for k, v in payload.items():
             setattr(view, k, v)
         self.views[viewtype].append(view)
         return view
 
     def delete_view_by_refid(self, refid, viewtype=None):
-        for k,v in self.views.items():
+        for k, v in self.views.items():
             if viewtype and viewtype != k:
                 continue
-            for idx,x in enumerate(v):
+            for idx, x in enumerate(v):
                 if x._ref == refid:
                     print('REMOVING %s' % x._ref)
-                    self.views[k].remove(x)
-                    #break
+                    self.views[k].remove(x)  # break
 
     def update_view_by_refid(self, refid, params):
         print('# UPDATING REFID %s' % refid)
-        #refid = refid.replace('view', 'networkview')
+        # refid = refid.replace('view', 'networkview')
         viewk = None
         viewix = None
         changed = False
-        for k,v in self.views.items():
-            for idx,x in enumerate(v):
+        for k, v in self.views.items():
+            for idx, x in enumerate(v):
                 if x._refid != refid:
                     print('# %s != %s' % (x._refid, refid))
                 else:
@@ -265,7 +267,7 @@ class DataModel(object):
                 if x._ref == refid:
                     viewk = k
                     viewix = idx
-                    for pk,pv in params.items():
+                    for pk, pv in params.items():
                         print('# pk: %s pv: %s' % (pk, pv))
                         if pk == 'options':
                             # INPUT ...
@@ -283,12 +285,12 @@ class DataModel(object):
                             if not opts:
                                 opts = pv[:]
                             else:
-                                for idr,reqopt in enumerate(pv):
+                                for idr, reqopt in enumerate(pv):
                                     isset = False
-                                    for idv,viewopt in enumerate(opts):
+                                    for idv, viewopt in enumerate(opts):
                                         if viewopt.get('name') != reqopt.get('name'):
                                             continue
-                                        for rk,rv in reqopt.items():
+                                        for rk, rv in reqopt.items():
                                             opts[idv][rk] = rv
                                         isset = False
                                     if not isset:
@@ -344,7 +346,7 @@ class DataModel(object):
 
     def serialize_views(self, viewtype=None, name=None):
         res = []
-        for k,v in self.views.items():
+        for k, v in self.views.items():
             if viewtype and viewtype != k:
                 continue
             if name:
@@ -358,13 +360,15 @@ class DataModel(object):
         return res
 
     def serialize_view(self, view_type, name=None):
-        #print('serializing %s view' % view_type)
+        # print('serializing %s view' % view_type)
         res = [x.to_dict() for x in self.views[view_type]]
         return res
 
-    def serialize_view_by_refid(self, refid, returnfields=[]):
+    def serialize_view_by_refid(self, refid, returnfields=None):
+        if returnfields is None:
+            returnfields = []
         view = None
-        for k,v in self.views.items():
+        for k, v in self.views.items():
             for x in v:
                 if x._ref == refid:
                     view = x
@@ -377,28 +381,31 @@ class DataModel(object):
 DATA = DataModel()
 
 
+# noinspection PyProtectedMember
 @app.route('/wapi/v2.1/<viewtype>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def v21_base(viewtype):
-    #if viewtype != 'view':
+    # if viewtype != 'view':
     #    viewtype = viewtype.replace('view', '')
-    #print('VIEWTYPE: %s METHOD: %s' % (viewtype, request.method))
+    # print('VIEWTYPE: %s METHOD: %s' % (viewtype, request.method))
 
-    print('# METHOD: %s VIEWTYPE: %s' % (
-        request.method, viewtype
-    ))
+    print('# METHOD: %s VIEWTYPE: %s' % (request.method, viewtype))
     args = request.args.to_dict()
     print('# REQARGS ...')
     pprint(args)
     print('# REQJSON ...')
     try:
         pprint(request.get_json())
-    except:
+    except Exception:
         pprint({})
 
     if request.method == 'GET':
         print('# FETCHED VIEW ...')
-        #payload = DATA.serialize_view(viewtype, name=args.get('name'))
-        payload = DATA.serialize_views(viewtype=viewtype, name=args.get('name'))
+        # payload = DATA.serialize_view(viewtype, name=args.get('name'))
+        print('# ARGS ...')
+        name = args.get('name', None)
+        if name is None:
+            name = args.get('ptrdname', None)
+        payload = DATA.serialize_views(viewtype=viewtype, name=name)
         pprint(payload)
         return jsonify(payload)
 
@@ -412,13 +419,13 @@ def v21_base(viewtype):
 
     return jsonify({})
 
+
 # /wapi/v2.1/network/bmV0d29yayQxLjAuMC4wLzI0JGRlZmF1bHQ%3D%3A1.0.0.0/24/default
-#@app.route('/wapi/v2.1/<viewtype>/<refid>/<subname>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-#@app.route('/wapi/v2.1/<viewtype>/<refid>/<subname>/subsubname', methods=['GET', 'POST', 'PUT', 'DELETE'])
+# @app.route('/wapi/v2.1/<viewtype>/<refid>/<subname>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+# @app.route('/wapi/v2.1/<viewtype>/<refid>/<subname>/subsubname', methods=['GET', 'POST', 'PUT', 'DELETE'])
 @app.route('/wapi/v2.1/<viewtype>/<path:refpath>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsubname=None):
-
-    '''
+    """
     _refid = 'view/' + refid + '/' + subname
     __refid = refid.split(':')[0]
     if viewtype != 'view':
@@ -427,14 +434,12 @@ def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsu
     print('VIEWTYPE: %s METHOD: %s REFID: %s _REFID: %s' % (
         viewtype, request.method, __refid, _refid
     ))
-    '''
+    """
 
     print('# REFPATH: %s' % refpath)
     _refid = viewtype + '/' + refpath
     uid = refpath.split('/')[1].split(':')[0]
-    print('# METHOD: %s VIEWTYPE: %s UID: %s _REFID: %s' % (
-        request.method, viewtype, uid, _refid
-    ))
+    print('# METHOD: %s VIEWTYPE: %s UID: %s _REFID: %s' % (request.method, viewtype, uid, _refid))
 
     args = request.args.to_dict()
     print('# REQARGS ...')
@@ -442,11 +447,11 @@ def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsu
     print('# REQJSON ...')
     try:
         pprint(request.get_json())
-    except:
+    except Exception:
         pprint({})
 
     if request.method == 'GET':
-        view = DATA.serialize_view_by_refid(__refid, return_fields=args.get('_return_fields', []))
+        view = DATA.serialize_view_by_refid(_refid, returnfields=args.get('_return_fields', []))
         print('# FETCHED VIEW [%s]...' % _refid)
         pprint(view)
         return jsonify(view)
@@ -458,7 +463,7 @@ def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsu
         return jsonify(view.to_dict()), 201
     elif request.method == 'PUT':
         view = DATA.update_view_by_refid(_refid, request.get_json())
-        #view = DATA.update_view_by_uid(__refid, request.get_json())
+        # view = DATA.update_view_by_uid(__refid, request.get_json())
         if not view:
             print('# ERROR!!! MODIFYING [%s] RETURN NO VIEW!' % _refid)
             return jsonify({})
@@ -472,7 +477,7 @@ def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsu
         return jsonify({})
 
     print('default return ...')
-    #return ''
+    # return ''
     return jsonify({})
 
 
