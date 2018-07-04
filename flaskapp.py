@@ -216,7 +216,6 @@ class NetworkView(object):
         return "%s.in-addr.arpa" % '.'.join(reversed(str(pget).split('.')))
 
 
-# noinspection PyProtectedMember
 class DataModel(object):
     def __init__(self):
         self.views = {
