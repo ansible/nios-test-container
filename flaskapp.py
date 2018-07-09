@@ -28,6 +28,7 @@ class NetworkView(object):
     _uid = None
     is_default = False
     name = None
+    ptrdname = None
     comment = None
     extattrs = {}
     network_view = 'default'
@@ -36,6 +37,8 @@ class NetworkView(object):
     fqdn = None
     ipv4addrs = []
     ipv6addrs = []
+    ipv4addr = None
+    ipv6addr = None
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -168,7 +171,7 @@ class NetworkView(object):
             out += '/'
             out += self.uid
             out += ':'
-            out += self.name
+            out += self.name if self.ptrdname is None else self.get_ptr_name()
             out += '/'
             out += str(self.default).lower()
         return out
@@ -181,6 +184,7 @@ class NetworkView(object):
             #'_ref': self.uid,
             'is_default': self.default,
             'name': self.name,
+            'ptrdname': self.ptrdname,
             'comment': self.comment,
             'extattrs': self.extattrs,
             'network_view': self.network_view,
@@ -190,7 +194,9 @@ class NetworkView(object):
             'options': self.options,
             'fqdn': self.fqdn,
             'ipv4addrs': self.ipv4addrs,
-            'ipv6addrs': self.ipv6addrs
+            'ipv6addrs': self.ipv6addrs,
+            'ipv4addr': self.ipv4addr,
+            'ipv6addr': self.ipv6addr
         }
         if fields:
             for x in fields:
@@ -201,6 +207,14 @@ class NetworkView(object):
                         ddict[x] = getattr(self, x)
         return ddict
 
+    def get_ptr_name(self):
+        """Get the name in the _ref for PTR:RECORD
+
+        :return: str
+        """
+        pget = self.ipv6addr if self.ipv4addr is None else self.ipv4addr
+        return "%s.in-addr.arpa" % '.'.join(reversed(str(pget).split('.')))
+
 
 class DataModel(object):
     def __init__(self):
@@ -210,7 +224,8 @@ class DataModel(object):
             'ipv6network': [NetworkView(uid='ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA', isdefault=True, name='default', network='fe80::/64')],
             'zone_auth': [],
             'view': [NetworkView(isdefault=True, name='default', viewtype='view')],
-            'record:host': []
+            'record:host': [],
+            'record:ptr': [],
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
@@ -397,8 +412,11 @@ def v21_base(viewtype):
 
     if request.method == 'GET':
         print('# FETCHED VIEW ...')
-        #payload = DATA.serialize_view(viewtype, name=args.get('name'))
-        payload = DATA.serialize_views(viewtype=viewtype, name=args.get('name'))
+        # payload = DATA.serialize_view(viewtype, name=args.get('name'))
+        name = args.get('name', None)
+        if name is None:
+            name = args.get('ptrdname', None)
+        payload = DATA.serialize_views(viewtype=viewtype, name=name)
         pprint(payload)
         return jsonify(payload)
 
@@ -446,7 +464,7 @@ def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsu
         pprint({})
 
     if request.method == 'GET':
-        view = DATA.serialize_view_by_refid(__refid, return_fields=args.get('_return_fields', []))
+        view = DATA.serialize_view_by_refid(_refid, returnfields=args.get('_return_fields', []))
         print('# FETCHED VIEW [%s]...' % _refid)
         pprint(view)
         return jsonify(view)
