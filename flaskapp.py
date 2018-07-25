@@ -39,6 +39,7 @@ class NetworkView(object):
     ipv6addrs = []
     ipv4addr = None
     ipv6addr = None
+    configure_for_dns = True
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -196,7 +197,8 @@ class NetworkView(object):
             'ipv4addrs': self.ipv4addrs,
             'ipv6addrs': self.ipv6addrs,
             'ipv4addr': self.ipv4addr,
-            'ipv6addr': self.ipv6addr
+            'ipv6addr': self.ipv6addr,
+            'configure_for_dns': self.configure_for_dns
         }
         if fields:
             for x in fields:
