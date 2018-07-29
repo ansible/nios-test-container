@@ -51,6 +51,7 @@ class NetworkView(object):
     weight = None
     order = None
     replacement = None
+    text = None
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -220,7 +221,8 @@ class NetworkView(object):
             'target': self.target,
             'weight': self.weight,
             'order': self.order,
-            'replacement': self.replacement
+            'replacement': self.replacement,
+            'text': self.text
         }
         if fields:
             for x in fields:
@@ -255,7 +257,8 @@ class DataModel(object):
             'record:cname': [],
             'record:mx': [],
             'record:srv': [],
-            'record:naptr': []
+            'record:naptr': [],
+            'record:txt': []
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
