@@ -40,6 +40,17 @@ class NetworkView(object):
     ipv4addr = None
     ipv6addr = None
     configure_for_dns = True
+    ipv4 = None
+    ipv6 = None
+    canonical = None
+    mail_exchanger = None
+    preference = None
+    port = None
+    priority = None
+    target = None
+    weight = None
+    order = None
+    replacement = None
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -198,7 +209,18 @@ class NetworkView(object):
             'ipv6addrs': self.ipv6addrs,
             'ipv4addr': self.ipv4addr,
             'ipv6addr': self.ipv6addr,
-            'configure_for_dns': self.configure_for_dns
+            'configure_for_dns': self.configure_for_dns,
+            'ipv4': self.ipv4,
+            'ipv6': self.ipv6,
+            'canonical': self.canonical,
+            'mail_exchanger': self.mail_exchanger,
+            'preference': self.preference,
+            'port': self.port,
+            'priority': self.priority,
+            'target': self.target,
+            'weight': self.weight,
+            'order': self.order,
+            'replacement': self.replacement
         }
         if fields:
             for x in fields:
@@ -228,6 +250,12 @@ class DataModel(object):
             'view': [NetworkView(isdefault=True, name='default', viewtype='view')],
             'record:host': [],
             'record:ptr': [],
+            'record:a': [],
+            'record:aaaa': [],
+            'record:cname': [],
+            'record:mx': [],
+            'record:srv': [],
+            'record:naptr': []
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
