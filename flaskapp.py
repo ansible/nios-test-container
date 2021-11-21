@@ -57,6 +57,9 @@ class NetworkView(object):
     grid_secondaries = None
     ns_group = None
     delegate_to = []
+    forwarding_servers = []
+    external_servers = []
+    stub_members = []
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -232,7 +235,10 @@ class NetworkView(object):
             'grid_primary': self.grid_primary,
             'grid_secondaries': self.grid_secondaries,
             'ns_group': self.ns_group,
-            'delegate_to': self.delegate_to
+            'delegate_to': self.delegate_to,
+            'forwarding_servers': self.forwarding_servers,
+            'external_servers': self.external_servers,
+            'stub_members': self.stub_members
         }
         if fields:
             for x in fields:
@@ -270,6 +276,9 @@ class DataModel(object):
             'record:naptr': [],
             'record:txt': [],
             'nsgroup:delegation': [],
+            'nsgroup:forwardingmember': [],
+            'nsgroup:forwardstubserver': [],
+            'nsgroup:stubmember': []
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
