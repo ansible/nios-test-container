@@ -56,6 +56,7 @@ class NetworkView(object):
     grid_primary = None
     grid_secondaries = None
     ns_group = None
+    delegate_to = []
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -230,7 +231,8 @@ class NetworkView(object):
             'zone_format': self.zone_format,
             'grid_primary': self.grid_primary,
             'grid_secondaries': self.grid_secondaries,
-            'ns_group': self.ns_group
+            'ns_group': self.ns_group,
+            'delegate_to': self.delegate_to
         }
         if fields:
             for x in fields:
@@ -266,7 +268,8 @@ class DataModel(object):
             'record:mx': [],
             'record:srv': [],
             'record:naptr': [],
-            'record:txt': []
+            'record:txt': [],
+            'nsgroup:delegation': [],
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
