@@ -278,7 +278,7 @@ class DataModel(object):
             'nsgroup:delegation': [],
             'nsgroup:forwardingmember': [],
             'nsgroup:forwardstubserver': [],
-            'nsgroup:stubmember': []
+            'nsgroup:stubmember': [],
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
