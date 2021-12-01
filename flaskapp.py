@@ -238,7 +238,7 @@ class NetworkView(object):
             'delegate_to': self.delegate_to,
             'forwarding_servers': self.forwarding_servers,
             'external_servers': self.external_servers,
-            'stub_members': self.stub_members
+            'stub_members': self.stub_members,
         }
         if fields:
             for x in fields:
