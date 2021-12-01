@@ -1,4 +1,4 @@
-FROM alpine:3.14
+FROM alpine:3.15
 
 ADD flaskapp.py /root/flaskapp.py
 ADD requirements.txt /root/requirements.txt
