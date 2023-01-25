@@ -1,8 +1,16 @@
-FROM alpine:3.15
+FROM quay.io/bedrock/alpine:3.17.1
+
+RUN apk add --no-cache python3 py3-cffi
+
+RUN python -m venv /root/venv --system-site-packages
+RUN /root/venv/bin/pip install --disable-pip-version-check --no-cache wheel==0.38.4  # avoid pip warning when installing Flask-BasicAuth
+
+ADD requirements.txt /root/requirements.txt
+ADD constraints.txt /root/constraints.txt
+
+RUN /root/venv/bin/pip install --disable-pip-version-check --no-cache -r /root/requirements.txt -c /root/constraints.txt
 
 ADD flaskapp.py /root/flaskapp.py
-ADD requirements.txt /root/requirements.txt
-RUN apk add --no-cache build-base python3 py3-wheel py3-pip py3-cryptography
-RUN pip3 install -r /root/requirements.txt
+CMD /root/venv/bin/python /root/flaskapp.py
+
 EXPOSE 443
-CMD /usr/bin/python3 /root/flaskapp.py
