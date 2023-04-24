@@ -60,6 +60,11 @@ class NetworkView(object):
     forwarding_servers = []
     external_servers = []
     stub_members = []
+    members = []
+    master_candidate = False
+    start_addr = None
+    end_addr = None
+    member = None
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -153,7 +158,7 @@ class NetworkView(object):
     @property
     def _ref(self):
         '''
-        (ansidev) jtanner-OSX:AP-NIOS_FLASK_MOCK jtanner$ curl -k -u admin:infoblox 'https://192.168.10.10/wapi/v2.1/network'
+        (ansidev) jtanner-OSX:AP-NIOS_FLASK_MOCK jtanner$ curl -k -u admin:infoblox 'https://192.168.10.10/wapi/v2.9/network'
         [
             {
                 "_ref": "network/ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w:1.0.0.0/24/default",
@@ -166,7 +171,7 @@ class NetworkView(object):
                 "network_view": "ansible-view"
             }
         ]
-        (ansidev) jtanner-OSX:AP-NIOS_FLASK_MOCK jtanner$ curl -k -u admin:infoblox 'https://192.168.10.10/wapi/v2.1/ipv6network'
+        (ansidev) jtanner-OSX:AP-NIOS_FLASK_MOCK jtanner$ curl -k -u admin:infoblox 'https://192.168.10.10/wapi/v2.9/ipv6network'
         [
             {
                 "_ref": "ipv6network/ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA:fe80%3A%3A/64/default",
@@ -239,6 +244,11 @@ class NetworkView(object):
             'forwarding_servers': self.forwarding_servers,
             'external_servers': self.external_servers,
             'stub_members': self.stub_members,
+            'members': self.members,
+            'master_candidate': self.master_candidate,
+            'start_addr': self.start_addr,
+            'end_addr': self.end_addr,
+            'member': self.member,
         }
         if fields:
             for x in fields:
@@ -279,6 +289,7 @@ class DataModel(object):
             'nsgroup:forwardingmember': [],
             'nsgroup:forwardstubserver': [],
             'nsgroup:stubmember': [],
+            'range': [],
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
@@ -445,7 +456,7 @@ class DataModel(object):
 DATA = DataModel()
 
 
-@app.route('/wapi/v2.1/<viewtype>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/wapi/v2.9/<viewtype>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def v21_base(viewtype):
     #if viewtype != 'view':
     #    viewtype = viewtype.replace('view', '')
@@ -483,10 +494,10 @@ def v21_base(viewtype):
 
     return jsonify({})
 
-# /wapi/v2.1/network/bmV0d29yayQxLjAuMC4wLzI0JGRlZmF1bHQ%3D%3A1.0.0.0/24/default
-#@app.route('/wapi/v2.1/<viewtype>/<refid>/<subname>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-#@app.route('/wapi/v2.1/<viewtype>/<refid>/<subname>/subsubname', methods=['GET', 'POST', 'PUT', 'DELETE'])
-@app.route('/wapi/v2.1/<viewtype>/<path:refpath>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+# /wapi/v2.9/network/bmV0d29yayQxLjAuMC4wLzI0JGRlZmF1bHQ%3D%3A1.0.0.0/24/default
+# @app.route('/wapi/v2.9/<viewtype>/<refid>/<subname>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+# @app.route('/wapi/v2.9/<viewtype>/<refid>/<subname>/subsubname', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/wapi/v2.9/<viewtype>/<path:refpath>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsubname=None):
 
     '''
