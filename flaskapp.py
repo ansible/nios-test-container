@@ -275,6 +275,7 @@ class DataModel(object):
             'networkview': [NetworkView(uid='ZG5zLm5ldHdvcmtfdmlldyQw', isdefault=True, name='default', network='1.0.0.0/24')],
             'ipv6network': [NetworkView(uid='ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA', isdefault=True, name='default', network='fe80::/64')],
             'zone_auth': [],
+            'fixedaddress': [],
             'view': [NetworkView(isdefault=True, name='default', viewtype='view')],
             'record:host': [],
             'record:ptr': [],
