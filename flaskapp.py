@@ -96,6 +96,12 @@ class NetworkView(object):
     lb_preferred_method = None
     servers = []
     monitors = []
+    lb_method = None
+    auth_zones = []
+    patterns = []
+    types = []
+    pools = []
+    ttl = None
     rules = []
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
@@ -312,6 +318,12 @@ class NetworkView(object):
             'lb_preferred_method': self.lb_preferred_method,
             'servers': self.servers,
             'monitors': self.monitors,
+            'lb_method': self.lb_method,
+            'auth_zones': self.auth_zones,
+            'patterns': self.patterns,
+            'types': self.types,
+            'pools': self.pools,
+            'ttl': self.ttl,
             'rules': self.rules,
         }
         if fields:
