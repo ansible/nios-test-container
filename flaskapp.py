@@ -65,6 +65,38 @@ class NetworkView(object):
     start_addr = None
     end_addr = None
     member = None
+    ciphers = None
+    client_cert = None
+    content_check = 'NONE'
+    content_check_input = 'ALL'
+    content_check_op = []
+    content_check_regex = None
+    content_extract_group = 0
+    content_extract_type = 'STRING'
+    content_extract_value = None
+    request = None
+    result = 'ANY'
+    result_code = 200
+    enable_sni = False
+    secure = False
+    validate_cert = False
+    interval = 5
+    retry_down = 2
+    retry_up = 1
+    timeout = 15
+    transport = 'TCP'
+    version = 'V2C'
+    community = 'public'
+    user = None
+    context = None
+    engine_id = None
+    oids = []
+    host = None
+    disable = False
+    lb_preferred_method = None
+    servers = []
+    monitors = []
+    rules = []
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -249,6 +281,38 @@ class NetworkView(object):
             'start_addr': self.start_addr,
             'end_addr': self.end_addr,
             'member': self.member,
+            'ciphers': self.ciphers,
+            'client_cert': self.client_cert,
+            'content_check': self.content_check,
+            'content_check_input': self.content_check_input,
+            'content_check_op': self.content_check_op,
+            'content_check_regex': self.content_check_regex,
+            'content_extract_group': self.content_extract_group,
+            'content_extract_type': self.content_extract_type,
+            'content_extract_value': self.content_extract_value,
+            'request': self.request,
+            'result': self.result,
+            'result_code': self.result_code,
+            'enable_sni': self.enable_sni,
+            'secure': self.secure,
+            'validate_cert': self.validate_cert,
+            'interval': self.interval,
+            'retry_down': self.retry_down,
+            'retry_up': self.retry_up,
+            'timeout': self.timeout,
+            'transport': self.transport,
+            'version': self.version,
+            'community': self.community,
+            'user': self.user,
+            'context': self.context,
+            'engine_id': self.engine_id,
+            'oids': self.oids,
+            'host': self.host,
+            'disable': self.disable,
+            'lb_preferred_method': self.lb_preferred_method,
+            'servers': self.servers,
+            'monitors': self.monitors,
+            'rules': self.rules,
         }
         if fields:
             for x in fields:
@@ -290,6 +354,16 @@ class DataModel(object):
             'nsgroup:forwardstubserver': [],
             'nsgroup:stubmember': [],
             'range': [],
+            'dtc:lbdn': [],
+            'dtc:monitor:http': [],
+            'dtc:monitor:icmp': [],
+            'dtc:monitor:pdp': [],
+            'dtc:monitor:sip': [],
+            'dtc:monitor:snmp': [],
+            'dtc:monitor:tcp': [],
+            'dtc:pool': [],
+            'dtc:server': [],
+            'dtc:topology': [],
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
