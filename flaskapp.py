@@ -103,6 +103,8 @@ class NetworkView(object):
     pools = []
     ttl = None
     rules = []
+    use_logic_filter_rules = False
+    logic_filter_rules = []
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -325,6 +327,8 @@ class NetworkView(object):
             'pools': self.pools,
             'ttl': self.ttl,
             'rules': self.rules,
+            'use_logic_filter_rules': self.use_logic_filter_rules,
+            'logic_filter_rules': self.logic_filter_rules,
         }
         if fields:
             for x in fields:
@@ -542,7 +546,7 @@ class DataModel(object):
 DATA = DataModel()
 
 
-@app.route('/wapi/v2.9/<viewtype>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/wapi/v2.12.3/<viewtype>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def v21_base(viewtype):
     #if viewtype != 'view':
     #    viewtype = viewtype.replace('view', '')
@@ -583,7 +587,7 @@ def v21_base(viewtype):
 # /wapi/v2.9/network/bmV0d29yayQxLjAuMC4wLzI0JGRlZmF1bHQ%3D%3A1.0.0.0/24/default
 # @app.route('/wapi/v2.9/<viewtype>/<refid>/<subname>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 # @app.route('/wapi/v2.9/<viewtype>/<refid>/<subname>/subsubname', methods=['GET', 'POST', 'PUT', 'DELETE'])
-@app.route('/wapi/v2.9/<viewtype>/<path:refpath>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/wapi/v2.12.3/<viewtype>/<path:refpath>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def v21_abstractview_ref(viewtype, refid=None, subname=None, refpath=None, subsubname=None):
 
     '''
