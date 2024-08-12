@@ -105,6 +105,7 @@ class NetworkView(object):
     rules = []
     use_logic_filter_rules = False
     logic_filter_rules = []
+    flags = 'STRING'
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -380,6 +381,7 @@ class DataModel(object):
             'dtc:pool': [],
             'dtc:server': [],
             'dtc:topology': [],
+            'extensibleattributedef': [],
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
