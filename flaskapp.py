@@ -40,6 +40,7 @@ class NetworkView(object):
     ipv4addr = None
     ipv6addr = None
     configure_for_dns = True
+    use_dns_ea_inheritance = False
     ipv4 = None
     ipv6 = None
     canonical = None
@@ -265,6 +266,7 @@ class NetworkView(object):
             'ipv4addr': self.ipv4addr,
             'ipv6addr': self.ipv6addr,
             'configure_for_dns': self.configure_for_dns,
+            'use_dns_ea_inheritance': self.use_dns_ea_inheritance,
             'ipv4': self.ipv4,
             'ipv6': self.ipv6,
             'canonical': self.canonical,
