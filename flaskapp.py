@@ -107,6 +107,24 @@ class NetworkView(object):
     use_logic_filter_rules = False
     logic_filter_rules = []
     flags = 'STRING'
+    vlans = []
+    id = None
+    contact = None
+    department = None
+    description = None
+    reserved = False
+    admin_groups = []
+    password = None
+    auth_method = 'KEYPAIR'
+    auth_type = 'LOCAL'
+    use_ssh_keys = False
+    ssh_keys = []
+    enable_certificate_authentication = False
+    ca_certificate_issuer = None
+    client_certificate_serial_number = None
+    email = None
+    time_zone = 'UTC'
+    use_time_zone = False
 
     def __init__(self, uid=None, isdefault=False, name=None, viewtype='network', network=None, comment=None):
         # `ZG5zLm5ldHdvcmskMS4wLjAuMC8yNC8w` == `dns.network$1.0.0.0/24/0`
@@ -332,6 +350,24 @@ class NetworkView(object):
             'rules': self.rules,
             'use_logic_filter_rules': self.use_logic_filter_rules,
             'logic_filter_rules': self.logic_filter_rules,
+            'vlans': self.vlans,
+            'id': self.id,
+            'contact': self.contact,
+            'department': self.department,
+            'description': self.description,
+            'reserved': self.reserved,
+            'admin_groups': self.admin_groups,
+            'password': self.password,
+            'auth_method': self.auth_method,
+            'auth_type': self.auth_type,
+            'use_ssh_keys': self.use_ssh_keys,
+            'ssh_keys': self.ssh_keys,
+            'enable_certificate_authentication': self.enable_certificate_authentication,
+            'ca_certificate_issuer': self.ca_certificate_issuer,
+            'client_certificate_serial_number': self.client_certificate_serial_number,
+            'email': self.email,
+            'time_zone': self.time_zone,
+            'use_time_zone': self.use_time_zone,
         }
         if fields:
             for x in fields:
