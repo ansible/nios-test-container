@@ -352,6 +352,7 @@ class NetworkView(object):
             'logic_filter_rules': self.logic_filter_rules,
             'vlans': self.vlans,
             'id': self.id,
+            'parent': {"_ref":self.parent},
             'contact': self.contact,
             'department': self.department,
             'description': self.description,
@@ -420,6 +421,11 @@ class DataModel(object):
             'dtc:server': [],
             'dtc:topology': [],
             'extensibleattributedef': [],
+            'adminuser': [],
+            'vlan': [],
+            'vlanview': [NetworkView(isdefault=True, name='default', viewtype='vlanview')],
+            'vlanrange': [NetworkView(isdefault=True, name='default', viewtype='vlanrange')],
+            'cacertificate': [NetworkView(isdefault=True, name='default', viewtype='cacertificate')]
         }
         # ZG5zLm5ldHdvcmtfdmlldyQw == dns.network_view$0
         # ZG5zLm5ldHdvcmskZmU4MDo6LzY0LzA == dns.network$fe80::/64
