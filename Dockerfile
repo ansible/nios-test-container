@@ -1,4 +1,4 @@
-FROM quay.io/bedrock/alpine:3.17.1
+FROM public.ecr.aws/docker/library/alpine:3.17.1
 
 RUN apk add --no-cache python3 py3-cffi
 
